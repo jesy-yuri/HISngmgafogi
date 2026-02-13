@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Hospital Management UI (Demo)</title>
+  <style>
+    body{font-family: Arial, Helvetica, sans-serif;margin:16px}
+    header{display:flex;align-items:center;gap:16px}
+    h1{margin:0}
+    nav button{margin-right:8px}
+    section{margin-top:16px}
+    .grid{display:grid;grid-template-columns:1fr 2fr;gap:16px}
+    table{width:100%;border-collapse:collapse}
+    th,td{border:1px solid #ccc;padding:8px;text-align:left}
+    .small{width:120px}
+    .hidden{display:none}
+    .actions button{margin-right:6px}
+    fieldset{padding:10px}
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Hospital Management (Demo UI)</h1>
+    <nav>
+      <button id="tabPatients">Patients</button>
+      <button id="tabDoctors">Doctors</button>
+      <button id="tabAppointments">Appointments</button>
+    </nav>
+  </header>
+
+  <main>
+    <section id="patientsSection">
+      <h2>Patients</h2>
+      <div class="grid">
+        <div>
+          <fieldset>
+            <legend>Add Patient</legend>
+            <form id="patientForm">
+              <div>
+                <label>Name</label><br>
+                <input id="p-name" required>
+              </div>
+              <div>
+                <label>Email</label><br>
+                <input id="p-email" type="email">
+              </div>
+              <div>
+                <label>Notes</label><br>
+                <textarea id="p-notes" rows="3"></textarea>
+              </div>
+              <div style="margin-top:8px">
+                <button type="submit">Add Patient</button>
+              </div>
+            </form>
+          </fieldset>
+        </div>
+        <div>
+          <h3>Patient List</h3>
+          <table>
+            <thead>
+              <tr><th class="small">ID</th><th>Name</th><th>Email</th><th>Notes</th><th class="small">Actions</th></tr>
+            </thead>
+            <tbody id="patientsTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section id="doctorsSection" class="hidden">
+      <h2>Doctors</h2>
+      <div class="grid">
+        <div>
+          <fieldset>
+            <legend>Add Doctor</legend>
+            <form id="doctorForm">
+              <div><label>Name</label><br><input id="d-name" required></div>
+              <div><label>Specialty</label><br><input id="d-specialty"></div>
+              <div style="margin-top:8px"><button type="submit">Add Doctor</button></div>
+            </form>
+          </fieldset>
+        </div>
+        <div>
+          <h3>Doctors</h3>
+          <table>
+            <thead><tr><th class="small">ID</th><th>Name</th><th>Specialty</th><th class="small">Actions</th></tr></thead>
+            <tbody id="doctorsTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section id="appointmentsSection" class="hidden">
+      <h2>Appointments</h2>
+      <div class="grid">
+        <div>
+          <fieldset>
+            <legend>New Appointment</legend>
+            <form id="appointmentForm">
+              <div><label>Patient</label><br><select id="a-patient"></select></div>
+              <div><label>Doctor</label><br><select id="a-doctor"></select></div>
+              <div><label>Date & Time</label><br><input id="a-datetime" type="datetime-local"></div>
+              <div style="margin-top:8px"><button type="submit">Schedule</button></div>
+            </form>
+          </fieldset>
+        </div>
+        <div>
+          <h3>Appointments</h3>
+          <table>
+            <thead><tr><th class="small">ID</th><th>Patient</th><th>Doctor</th><th>Date/Time</th><th class="small">Actions</th></tr></thead>
+            <tbody id="appointmentsTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const apiBase = 'http://localhost:3001/patients'; // backend patients endpoints
+    const doctorsApi = 'http://localhost:3001/doctors';
+    const apptsApi = 'http://localhost:3001/appointments';
+
+    const show = id => {
+      ['patientsSection','doctorsSection','appointmentsSection'].forEach(s=>document.getElementById(s).classList.add('hidden'));
+      document.getElementById(id).classList.remove('hidden');
+    };
+    document.getElementById('tabPatients').onclick = ()=>show('patientsSection');
+    document.getElementById('tabDoctors').onclick = ()=>show('doctorsSection');
+    document.getElementById('tabAppointments').onclick = ()=>show('appointmentsSection');
+
+    async function loadPatients(){
+      try{const res = await fetch(`${apiBase}`);const patients = await res.json();const body = document.getElementById('patientsTable');body.innerHTML = patients.map(p=>`<tr id="p-${p.id}"><td>${p.id}</td><td id="pname-${p.id}">${p.name}</td><td id="pemail-${p.id}">${p.email||''}</td><td id="pnotes-${p.id}">${p.notes||''}</td><td class="actions small"><button onclick="editPatient(${p.id})">Edit</button><button onclick="deletePatient(${p.id})" style="color:red">Delete</button></td></tr>`).join('');populatePatientSelect(patients);}catch(e){console.error(e);}}
+
+    document.getElementById('patientForm').onsubmit = async e=>{e.preventDefault();const body={ name: document.getElementById('p-name').value, email: document.getElementById('p-email').value, notes: document.getElementById('p-notes').value };try{const res = await fetch(`${apiBase}`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) });if(!res.ok){ alert('Failed to add patient'); return }document.getElementById('patientForm').reset();await loadPatients();}catch(err){alert('Error: '+err.message)}};
+
+    window.editPatient = function(id){const nameEl = document.getElementById(`pname-${id}`);const emailEl = document.getElementById(`pemail-${id}`);nameEl.innerHTML = `<input id="edit-name-${id}" value="${nameEl.innerText}">`;emailEl.innerHTML = `<input id="edit-email-${id}" value="${emailEl.innerText}">`;const row = document.getElementById(`p-${id}`);row.querySelector('.actions').innerHTML = `<button onclick="savePatient(${id})">Save</button><button onclick="loadPatients()">Cancel</button>`;};
+
+    window.savePatient = async function(id){const body = { name: document.getElementById(`edit-name-${id}`).value, email: document.getElementById(`edit-email-${id}`).value };try{const res = await fetch(`${apiBase}/${id}`, { method:'PATCH', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)});if(!res.ok) throw new Error('Update failed');await loadPatients();}catch(e){alert(e.message)}};
+
+    window.deletePatient = async function(id){if(!confirm('Delete patient?')) return;try{ await fetch(`${apiBase}/${id}`, { method:'DELETE' }); document.getElementById(`p-${id}`).remove(); }catch(e){alert('Delete failed')}};
+
+    function populatePatientSelect(patients){const sel = document.getElementById('a-patient');sel.innerHTML = patients.map(p=>`<option value="${p.id}">${p.name} (${p.id})</option>`).join('');}
+
+    async function loadDoctors(){try{const res = await fetch(doctorsApi);const doctors = await res.json();const body = document.getElementById('doctorsTable');body.innerHTML = doctors.map(d=>`<tr id="d-${d.id}"><td>${d.id}</td><td>${d.name}</td><td>${d.specialty||''}</td><td class="actions small"><button onclick="deleteDoctor(${d.id})">Delete</button></td></tr>`).join('');const sel = document.getElementById('a-doctor');sel.innerHTML = doctors.map(d=>`<option value="${d.id}">${d.name}</option>`).join('');}catch(e){console.error(e)}}
+
+    document.getElementById('doctorForm').onsubmit = async e=>{e.preventDefault();const body = { name: document.getElementById('d-name').value, specialty: document.getElementById('d-specialty').value };try{const res = await fetch(doctorsApi, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) });if(!res.ok) throw new Error('Failed to create doctor');document.getElementById('doctorForm').reset();await loadDoctors();}catch(e){alert(e.message)}};
+    window.deleteDoctor = async id=>{ if(!confirm('Delete doctor?')) return; try{ await fetch(`${doctorsApi}/${id}`,{ method:'DELETE' }); loadDoctors(); }catch(e){alert('Delete failed')} };
+
+    async function loadAppointments(){try{const res = await fetch(apptsApi);const appts = await res.json();const rows = appts.map(a=>`<tr id="a-${a.id}"><td>${a.id}</td><td>${a.patient?.name||''}</td><td>${a.doctor?.name||''}</td><td>${a.datetime}</td><td class="actions small"><button onclick="deleteAppointment(${a.id})">Delete</button></td></tr>`).join('');document.getElementById('appointmentsTable').innerHTML = rows;}catch(e){console.error(e)}}
+
+    document.getElementById('appointmentForm').onsubmit = async e=>{e.preventDefault();const body = { patientId: Number(document.getElementById('a-patient').value), doctorId: Number(document.getElementById('a-doctor').value), datetime: document.getElementById('a-datetime').value };try{const res = await fetch(apptsApi, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) });if(!res.ok) throw new Error('Failed to create appointment');document.getElementById('appointmentForm').reset();await loadAppointments();}catch(e){alert(e.message)}};
+    window.deleteAppointment = async id=>{ if(!confirm('Delete appointment?')) return; try{ await fetch(`${apptsApi}/${id}`,{ method:'DELETE' }); loadAppointments(); }catch(e){alert('Delete failed')} };
+
+    loadPatients(); loadDoctors(); loadAppointments();
+  </script>
+</body>
+</html>
