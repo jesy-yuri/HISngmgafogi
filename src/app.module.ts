@@ -24,7 +24,7 @@ import { AppointmentsService } from './appointments.service';
       port: Number(process.env.DB_PORT) || 3306,
       username: process.env.DB_USER || 'root',
       password: process.env.DB_PASS || '',
-      database: process.env.DB_NAME || 'market',
+      database: process.env.DB_NAME || 'hms_demo',
       entities: [Patient, Doctor, Appointment],
       synchronize: process.env.NODE_ENV !== 'production',
     }),

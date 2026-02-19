@@ -30,6 +30,12 @@
     </header>
 
     <main>
+        <section id="welcomeSection">
+            <h2>Welcome</h2>
+            <p class="muted">Welcome to the HMS demo. Click the button below to enter the dashboard.</p>
+            <div style="margin-top:8px"><button id="enterDashboardBtn">Enter Dashboard</button></div>
+        </section>
+
         <section id="patientsSection">
             <h2>Patients</h2>
             <div class="grid">
@@ -122,12 +128,13 @@
 
         // Tab logic
         const show = id => {
-            ['patientsSection','doctorsSection','appointmentsSection'].forEach(s=>document.getElementById(s).classList.add('hidden'));
+            ['welcomeSection','patientsSection','doctorsSection','appointmentsSection'].forEach(s=>document.getElementById(s).classList.add('hidden'));
             document.getElementById(id).classList.remove('hidden');
         };
         document.getElementById('tabPatients').onclick = ()=>show('patientsSection');
         document.getElementById('tabDoctors').onclick = ()=>show('doctorsSection');
         document.getElementById('tabAppointments').onclick = ()=>show('appointmentsSection');
+        document.getElementById('enterDashboardBtn').onclick = ()=>show('patientsSection');
 
         // -------- Patients (uses backend) --------
         async function loadPatients(){
@@ -236,6 +243,8 @@
 
         // Initial load
         loadPatients(); loadDoctors(); loadAppointments();
+        // show welcome first
+        show('welcomeSection');
     </script>
 </body>
 </html>
