@@ -130,9 +130,10 @@
   </main>
 
   <script>
-    const apiBase = 'http://localhost:3001/patients'; // backend patients endpoints
-    const doctorsApi = 'http://localhost:3001/doctors';
-    const apptsApi = 'http://localhost:3001/appointments';
+    // Use relative paths so the frontend talks to the same origin the app is served from
+    const apiBase = '/patients'; // backend patients endpoints
+    const doctorsApi = '/doctors';
+    const apptsApi = '/appointments';
 
     const tabs = ['welcomeSection','patientsSection','doctorsSection','appointmentsSection'];
     const show = id => {
