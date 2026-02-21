@@ -16,7 +16,8 @@ import { AppointmentsService } from './appointments.service';
   imports: [
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'public'),
-      exclude: ['/api(.*)', '/patients(.*)', '/doctors(.*)', '/appointments(.*)'],
+      // use RegExp excludes to avoid path-to-regexp parsing errors
+      exclude: [/^\/api/, /^\/patients/, /^\/doctors/, /^\/appointments/],
     }),
     TypeOrmModule.forRoot({
       type: 'mysql',
