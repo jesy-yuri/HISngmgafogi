@@ -3,30 +3,33 @@ import { AppService } from './app.service';
 import { UpdateUserDto } from './users.dto';
 import { Users } from './users.entity';
 
-@Controller('users')
+@Controller()
 export class AppController {
     constructor(private readonly userservice: AppService) { }
 
-    // Check database connection
-    @Get('db')
+    // Root endpoint - health check
+    @Get()
+    health(): { status: string; message: string } {
+        return { status: 'ok', message: 'HMS API is running' };
+    }
+
+    // Users controller routes
+    @Get('users/db')
     async checkdatabase(): Promise<string> {
         return await this.userservice.checkdb();
     }
 
-    // Insert users info
-    @Post('users')
+    @Post('users/users')
     async insert(@Body() body: { name: string; email: string }): Promise<Users> {
         return await this.userservice.insert(body);
     }
 
-    // display all users
-    @Get('display')
+    @Get('users/display')
     async findAll(): Promise<Users[]> {
         return await this.userservice.findAll();
     }
 
-    // Get single user
-    @Get(':id')
+    @Get('users/:id')
     findOne(@Param('id') id: string): Promise<Users> {
         return this.userservice.findOne1(+id);
     }

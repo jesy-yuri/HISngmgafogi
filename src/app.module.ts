@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { ServeStaticModule } from '@nestjs/serve-static';
-import { join } from 'path';
+
 import { Patient } from './patients.entity';
 import { Doctor } from './doctors.entity';
 import { Appointment } from './appointments.entity';
+
 import { PatientsController } from './patients.controller';
 import { PatientsService } from './patients.service';
 import { DoctorsController } from './doctors.controller';
@@ -14,21 +14,14 @@ import { AppointmentsService } from './appointments.service';
 
 @Module({
   imports: [
-    ServeStaticModule.forRoot({
-      rootPath: join(__dirname, '..', 'public'),
-      // use RegExp excludes to avoid path-to-regexp parsing errors
-      exclude: [/^\/api/, /^\/patients/, /^\/doctors/, /^\/appointments/],
-    }),
+    // Ginamit natin yung MYSQL_URL mo para mas mabilis mag-connect sa Railway
     TypeOrmModule.forRoot({
       type: 'mysql',
-      host: process.env.DB_HOST || 'localhost',
-      port: Number(process.env.DB_PORT) || 3306,
-      username: process.env.DB_USER || 'root',
-      password: process.env.DB_PASS || '',
-      database: process.env.DB_NAME || 'hms_demo',
-      entities: [Patient, Doctor, Appointment],
-      synchronize: process.env.NODE_ENV !== 'production',
+      url: process.env.MYSQL_URL, // <--- GAGAMITIN NATIN YUNG MUNGKAHI MO!
+      autoLoadEntities: true,
+      synchronize: true,
     }),
+
     TypeOrmModule.forFeature([Patient, Doctor, Appointment]),
   ],
   controllers: [PatientsController, DoctorsController, AppointmentsController],
