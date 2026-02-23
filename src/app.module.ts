@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ServeStaticModule } from '@nestjs/serve-static';
-import { join } from 'path';
 
 import { Patient } from './patients.entity';
 import { Doctor } from './doctors.entity';
@@ -17,10 +16,11 @@ import { AppointmentsService } from './appointments.service';
 @Module({
   imports: [
     // Serve static frontend files (HTML, CSS, JS) from the public folder
-    // The frontend/ folder needs to be copied to dist/public during build
     ServeStaticModule.forRoot({
-      rootPath: join(__dirname, '..', 'public'),
-      exclude: ['/api/*', '/patients*', '/doctors*', '/appointments*'],  // Let API controllers handle these
+      rootPath: process.env.NODE_ENV === 'production' 
+        ? 'public'
+        : process.cwd() + '/public',
+      exclude: ['/patients*', '/doctors*', '/appointments*'],  // Let API controllers handle these routes
     }),
 
     // Allow an easy local fallback to SQLite when USE_SQLITE=true is set.
