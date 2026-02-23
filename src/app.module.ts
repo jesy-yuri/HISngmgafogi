@@ -17,9 +17,7 @@ import { AppointmentsService } from './appointments.service';
   imports: [
     // Serve static frontend files (HTML, CSS, JS) from the public folder
     ServeStaticModule.forRoot({
-      rootPath: process.env.NODE_ENV === 'production' 
-        ? 'public'
-        : process.cwd() + '/public',
+      rootPath: 'public',
       exclude: ['/patients*', '/doctors*', '/appointments*'],  // Let API controllers handle these routes
     }),
 

@@ -9,6 +9,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.AppModule = void 0;
 const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
+const serve_static_1 = require("@nestjs/serve-static");
 const patients_entity_1 = require("./patients.entity");
 const doctors_entity_1 = require("./doctors.entity");
 const appointments_entity_1 = require("./appointments.entity");
@@ -24,6 +25,11 @@ exports.AppModule = AppModule;
 exports.AppModule = AppModule = __decorate([
     (0, common_1.Module)({
         imports: [
+            // Serve static frontend files (HTML, CSS, JS) from the public folder
+            serve_static_1.ServeStaticModule.forRoot({
+                rootPath: 'public',
+                exclude: ['/patients*', '/doctors*', '/appointments*'], // Let API controllers handle these routes
+            }),
             // Allow an easy local fallback to SQLite when USE_SQLITE=true is set.
             // This makes the demo runnable without a MySQL server.
             typeorm_1.TypeOrmModule.forRoot(process.env.USE_SQLITE === 'true'
