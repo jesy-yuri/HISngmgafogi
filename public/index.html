@@ -4,41 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Hospital Management UI (Demo)</title>
-  <style>
-    :root{--bg:#f6f8fb;--card:#ffffff;--muted:#6b7280;--accent:#2563eb;--danger:#dc2626}
-    *{box-sizing:border-box}
-    body{font-family:Inter,system-ui,Segoe UI,Roboto,Arial;margin:0;background:var(--bg);color:#0f172a}
-    header{display:flex;align-items:center;justify-content:space-between;padding:20px 24px;background:linear-gradient(90deg,#0ea5e9 0%,#7c3aed 100%);color:white}
-    header .brand{display:flex;gap:12px;align-items:center}
-    header h1{margin:0;font-size:18px;font-weight:600}
-    nav{display:flex;gap:8px}
-    nav button{background:transparent;border:0;color:rgba(255,255,255,0.9);padding:8px 12px;border-radius:8px;cursor:pointer}
-    nav button.active{background:rgba(255,255,255,0.12);}
-    main{max-width:1100px;margin:20px auto;padding:16px}
-    section{margin-top:8px}
-    .grid{display:grid;grid-template-columns:360px 1fr;gap:20px}
-    .card{background:var(--card);padding:16px;border-radius:12px;box-shadow:0 6px 18px rgba(16,24,40,0.06)}
-    .muted{color:var(--muted);font-size:13px}
-    table{width:100%;border-collapse:collapse}
-    th,td{padding:10px;text-align:left;border-bottom:1px solid #eef2f7}
-    th{font-size:13px;color:var(--muted);font-weight:600}
-    td{font-size:14px}
-    .small{width:120px}
-    .hidden{display:none}
-    .actions button{margin-right:6px;background:transparent;border:0;color:var(--accent);cursor:pointer}
-    .actions button.danger{color:var(--danger)}
-    fieldset{border:0;padding:0;margin:0}
-    label{display:block;font-size:13px;margin-bottom:6px;color:var(--muted)}
-    input,textarea,select{width:100%;padding:10px;border:1px solid #e6eef8;border-radius:8px;font-size:14px}
-    .form-row{margin-bottom:10px}
-    .btn{display:inline-block;padding:8px 12px;background:var(--accent);color:white;border-radius:8px;border:0;cursor:pointer}
-    .btn.ghost{background:transparent;color:var(--accent);border:1px solid #e6eef8}
-    @media (max-width:900px){
-      .grid{grid-template-columns:1fr;}
-      header{padding:12px}
-      main{padding:12px;margin:12px}
-    }
-  </style>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <header>
@@ -73,7 +39,7 @@
             <div style="display:flex;gap:8px;margin-top:8px"><button class="btn" type="submit">Add Patient</button><button type="button" class="btn ghost" onclick="document.getElementById('patientForm').reset()">Reset</button></div>
           </form>
         </div>
-        <div class="card">
+        <div class="  card">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><h3 style="margin:0">Patient List</h3><div class="muted">Showing latest</div></div>
           <table>
             <thead>
@@ -129,125 +95,6 @@
     </section>
   </main>
 
-  <script>
-    // Use relative paths so the frontend talks to the same origin the app is served from
-    const apiBase = '/patients'; // backend patients endpoints
-    const doctorsApi = '/doctors';
-    const apptsApi = '/appointments';
-
-    const tabs = ['welcomeSection','patientsSection','doctorsSection','appointmentsSection'];
-    const show = id => {
-      tabs.forEach(s=>document.getElementById(s).classList.add('hidden'));
-      document.getElementById(id).classList.remove('hidden');
-      // update active state
-      document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
-      if(id === 'patientsSection') document.getElementById('tabPatients').classList.add('active');
-      if(id === 'doctorsSection') document.getElementById('tabDoctors').classList.add('active');
-      if(id === 'appointmentsSection') document.getElementById('tabAppointments').classList.add('active');
-    };
-    document.getElementById('tabPatients').onclick = ()=>show('patientsSection');
-    document.getElementById('tabDoctors').onclick = ()=>show('doctorsSection');
-    document.getElementById('tabAppointments').onclick = ()=>show('appointmentsSection');
-    document.getElementById('enterDashboardBtn').onclick = ()=>show('patientsSection');
-
-    async function loadPatients(){
-      try {
-        const res = await fetch(`${apiBase}`);
-        const patients = await res.json();
-        const body = document.getElementById('patientsTable');
-        body.innerHTML = patients.map(p => `
-          <tr id="p-${p.id}">
-            <td>${p.id}</td>
-            <td id="pname-${p.id}">${p.name}</td>
-            <td id="pemail-${p.id}">${p.email||''}</td>
-            <td id="pnotes-${p.id}">${p.notes||''}</td>
-            <td class="actions small"><button onclick="editPatient(${p.id})">Edit</button><button onclick="deletePatient(${p.id})" class="danger">Delete</button></td>
-          </tr>`).join('');
-        populatePatientSelect(patients);
-      } catch(e) { console.error(e); }
-    }
-
-    document.getElementById('patientForm').onsubmit = async e=>{e.preventDefault();const body={ name: document.getElementById('p-name').value, email: document.getElementById('p-email').value, notes: document.getElementById('p-notes').value };try{const res = await fetch(`${apiBase}`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) });if(!res.ok){ alert('Failed to add patient'); return }document.getElementById('patientForm').reset();await loadPatients();}catch(err){alert('Error: '+err.message)}};
-
-    window.editPatient = function(id){const nameEl = document.getElementById(`pname-${id}`);const emailEl = document.getElementById(`pemail-${id}`);nameEl.innerHTML = `<input id="edit-name-${id}" value="${nameEl.innerText}">`;emailEl.innerHTML = `<input id="edit-email-${id}" value="${emailEl.innerText}">`;const row = document.getElementById(`p-${id}`);row.querySelector('.actions').innerHTML = `<button onclick="savePatient(${id})">Save</button><button onclick="loadPatients()">Cancel</button>`;};
-
-    window.savePatient = async function(id){const body = { name: document.getElementById(`edit-name-${id}`).value, email: document.getElementById(`edit-email-${id}`).value };try{const res = await fetch(`${apiBase}/${id}`, { method:'PATCH', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)});if(!res.ok) throw new Error('Update failed');await loadPatients();}catch(e){alert(e.message)}};
-
-    window.deletePatient = async function(id){if(!confirm('Delete patient?')) return;try{ await fetch(`${apiBase}/${id}`, { method:'DELETE' }); document.getElementById(`p-${id}`).remove(); }catch(e){alert('Delete failed')}};
- 
-    function populatePatientSelect(patients){const sel = document.getElementById('a-patient');sel.innerHTML = patients.map(p=>`<option value="${p.id}">${p.name} (${p.id})</option>`).join('');}
-
-    async function loadDoctors(){
-      try{
-        const res = await fetch(doctorsApi);
-        const doctors = await res.json();
-        const body = document.getElementById('doctorsTable');
-        body.innerHTML = doctors.map(d=>`<tr id="d-${d.id}"><td>${d.id}</td><td id="dname-${d.id}">${d.name}</td><td id="dspec-${d.id}">${d.specialty||''}</td><td class="actions small"><button onclick="editDoctor(${d.id})">Edit</button><button onclick="deleteDoctor(${d.id})">Delete</button></td></tr>`).join('');
-        const sel = document.getElementById('a-doctor');
-        sel.innerHTML = doctors.map(d=>`<option value="${d.id}">${d.name}</option>`).join('');
-      }catch(e){console.error(e)}
-    }
-
-    window.editDoctor = function(id){
-      const nameEl = document.getElementById(`dname-${id}`);
-      const specEl = document.getElementById(`dspec-${id}`);
-      nameEl.innerHTML = `<input id="edit-dname-${id}" value="${nameEl.innerText}">`;
-      specEl.innerHTML = `<input id="edit-dspec-${id}" value="${specEl.innerText}">`;
-      const row = document.getElementById(`d-${id}`);
-      row.querySelector('.actions').innerHTML = `<button onclick="saveDoctor(${id})">Save</button><button onclick="loadDoctors()">Cancel</button>`;
-    };
-
-    window.saveDoctor = async function(id){
-      const body = { name: document.getElementById(`edit-dname-${id}`).value, specialty: document.getElementById(`edit-dspec-${id}`).value };
-      try{
-        const res = await fetch(`${doctorsApi}/${id}`, { method:'PATCH', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)});
-        if(!res.ok) throw new Error('Update failed');
-        await loadDoctors();
-      }catch(e){alert(e.message)}
-    };
-
-    document.getElementById('doctorForm').onsubmit = async e=>{e.preventDefault();const body = { name: document.getElementById('d-name').value, specialty: document.getElementById('d-specialty').value };try{const res = await fetch(doctorsApi, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) });if(!res.ok) throw new Error('Failed to create doctor');document.getElementById('doctorForm').reset();await loadDoctors();}catch(e){alert(e.message)}};
-    window.deleteDoctor = async id=>{ if(!confirm('Delete doctor?')) return; try{ await fetch(`${doctorsApi}/${id}`,{ method:'DELETE' }); loadDoctors(); }catch(e){alert('Delete failed')} };
-
-    async function loadAppointments(){
-      try{
-        const res = await fetch(apptsApi);
-        const appts = await res.json();
-        const rows = appts.map(a=>`<tr id="a-${a.id}"><td>${a.id}</td><td id="ap-p-${a.id}">${a.patient?.name||''}</td><td id="ap-d-${a.id}">${a.doctor?.name||''}</td><td id="ap-t-${a.id}">${a.datetime}</td><td class="actions small"><button onclick="editAppointment(${a.id})">Edit</button><button onclick="deleteAppointment(${a.id})">Delete</button></td></tr>`).join('');
-        document.getElementById('appointmentsTable').innerHTML = rows;
-      }catch(e){console.error(e)}
-    }
-
-    window.editAppointment = async function(id){
-      try{
-        const [aRes, pRes, dRes] = await Promise.all([fetch(`${apptsApi}/${id}`), fetch(apiBase), fetch(doctorsApi)]);
-        if(!aRes.ok) throw new Error('Failed fetching appointment');
-        const appt = await aRes.json();
-        const patients = await pRes.json();
-        const doctors = await dRes.json();
-        const row = document.getElementById(`a-${id}`);
-        const patientOptions = patients.map(p=>`<option value="${p.id}" ${p.id===appt.patient?.id? 'selected':''}>${p.name}</option>`).join('');
-        const doctorOptions = doctors.map(d=>`<option value="${d.id}" ${d.id===appt.doctor?.id? 'selected':''}>${d.name}</option>`).join('');
-        const dtVal = appt.datetime ? new Date(appt.datetime).toISOString().slice(0,16) : '';
-        row.innerHTML = `<td>${id}</td><td><select id="edit-ap-p-${id}">${patientOptions}</select></td><td><select id="edit-ap-d-${id}">${doctorOptions}</select></td><td><input id="edit-ap-t-${id}" type="datetime-local" value="${dtVal}"></td><td class="actions small"><button onclick="saveAppointment(${id})">Save</button><button onclick="loadAppointments()">Cancel</button></td>`;
-      }catch(e){alert(e.message)}
-    };
-
-    window.saveAppointment = async function(id){
-      try{
-        const body = { patientId: Number(document.getElementById(`edit-ap-p-${id}`).value), doctorId: Number(document.getElementById(`edit-ap-d-${id}`).value), datetime: document.getElementById(`edit-ap-t-${id}`).value };
-        const res = await fetch(`${apptsApi}/${id}`, { method:'PATCH', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)});
-        if(!res.ok) throw new Error('Update failed');
-        await loadAppointments();
-      }catch(e){alert(e.message)}
-    };
-
-    document.getElementById('appointmentForm').onsubmit = async e=>{e.preventDefault();const body = { patientId: Number(document.getElementById('a-patient').value), doctorId: Number(document.getElementById('a-doctor').value), datetime: document.getElementById('a-datetime').value };try{const res = await fetch(apptsApi, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) });if(!res.ok) throw new Error('Failed to create appointment');document.getElementById('appointmentForm').reset();await loadAppointments();}catch(e){alert(e.message)}};
-    window.deleteAppointment = async id=>{ if(!confirm('Delete appointment?')) return; try{ await fetch(`${apptsApi}/${id}`,{ method:'DELETE' }); loadAppointments(); }catch(e){alert('Delete failed')} };
-
-    loadPatients(); loadDoctors(); loadAppointments();
-    // show welcome first
-    show('welcomeSection');
-  </script>
+  <script src="app.js"></script>
 </body>
 </html>
